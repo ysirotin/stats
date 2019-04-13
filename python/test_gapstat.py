@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Test performance of gap statistic on normal data.
+Test performance of gap statistic on normal data.  
 @author: ysirotin
 """
 
@@ -19,8 +19,13 @@ a2 = 0
 mu2 = 1.0
 sig2 = 0.1
 
+a3 = 0
+mu3 = 2.0
+sig3 = 0.1
 
 N = 10000
+
+# two bumps
 x = np.linspace(-2,3,100)
 
 fig, ax = plt.subplots(2, 2)
@@ -32,6 +37,7 @@ for ii in range(4):
     X = np.reshape(np.concatenate((rv1.rvs(size=N), rv2.rvs(size=N))),(2*N,1))
     nclusters = optimalK(X, cluster_array=np.arange(1,5))
     gap_value = optimalK.gap_df['gap_value'][optimalK.gap_df['n_clusters']==nclusters]
+    print(gap_value)
     dprime = (mu2-mu1)/np.sqrt(0.5 * (((ii+1)*sig1)**2+((ii+1)*sig2)**2))
 
     axl[ii].hist(X, 100, linewidth=0, normed=True)
@@ -41,3 +47,29 @@ for ii in range(4):
 
 plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
 fig.savefig(filename = 'test_gap.png', dpi = 96)
+
+
+# three bumps
+x = np.linspace(-2,4,100)
+
+fig, ax = plt.subplots(2, 2)
+axl = ax.reshape(1,4)[0]
+for ii in range(4):
+    rv1 = sc.stats.skewnorm(a1, loc=mu1, scale=(ii+1)*sig1)
+    rv2 = sc.stats.skewnorm(a2, loc=mu2, scale=(ii+1)*sig2)
+    rv3 = sc.stats.skewnorm(a3, loc=mu3, scale=(ii+1)*sig3)
+
+    X = np.reshape(np.concatenate((rv1.rvs(size=N), rv2.rvs(size=N), rv3.rvs(size=N))),(3*N,1))
+    nclusters = optimalK(X, cluster_array=np.arange(1,5))
+    gap_value = optimalK.gap_df['gap_value'][optimalK.gap_df['n_clusters']==nclusters]
+    dprime = (mu2-mu1)/np.sqrt(0.5 * (((ii+1)*sig1)**2+((ii+1)*sig2)**2))
+
+    axl[ii].hist(X, 100, linewidth=0, normed=True)
+    axl[ii].plot(x, rv1.pdf(x)/3)
+    axl[ii].plot(x, rv2.pdf(x)/3)
+    axl[ii].plot(x, rv3.pdf(x)/3)
+    axl[ii].set_title('Optimal Clusters = %d, \nGap = %1.2f, d\' = %1.2f' % (nclusters, gap_value, dprime))
+
+plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+fig.savefig(filename = 'test_gap2.png', dpi = 96)
+
